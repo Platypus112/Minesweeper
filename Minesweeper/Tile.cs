@@ -51,7 +51,7 @@ namespace Minesweeper
                     t.Adjacants[2] = new Tile(t,6);
                     t = t.Adjacants[2];
                 }
-                left.Adjacants[4] = new Tile(t, 0);
+                left.Adjacants[4] = new Tile(left, 0);
                 left = left.Adjacants[4];
             }
 

@@ -26,11 +26,23 @@ namespace Minesweeper
             if (Value == -1) return false;
             return true;
         }
-
+        public void AddBomb()
+        {
+            Value+=1;
+        }
+        public override string ToString()
+        {
+            if (Unvailed)
+            {
+                if(Value!=-1) return Value.ToString();
+                return "*";
+            }
+            return "x";
+        }
         //public Tile[] Adjacants { get; private set; }//adjacant tiles
         //public int Value { get;set; }//goes from 0-9, -1 value is a bomb
         //public bool Vailed {  get; set; }//if the tile is vailed this will be true
-        
+
         //public Tile()
         //{
         //    Adjacants = new Tile[8];
@@ -109,7 +121,7 @@ namespace Minesweeper
         //}
         //private int FlipPlace(int place)
         //{
-            
+
         //    return (place+4)%8;
         //}
         //public override string ToString()

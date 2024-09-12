@@ -14,12 +14,12 @@ namespace Minesweeper
         public bool IsPlaying { get; private set; }
         public bool? GameWon { get {return WonGame(); }  }
         public int Bombs {  get; private set; }
-        public Game(int height,int width,int Bombs_)
+        public Game(int width,int height,int Bombs_)
         {
             StartTime=DateTime.Now;
             EndTime=DateTime.Now;
             IsPlaying = true;
-            Board = new Tile[height, width];
+            Board = new Tile[width,height];
             Bombs = Bombs_;
             FillBoard();
         }
@@ -44,60 +44,100 @@ namespace Minesweeper
             {
                 for(int j = 0; j < Board.GetLength(1); j++)//height
                 {
-                    Board[i,j] = new Tile(0, false);
+                    Board[i,j] = new Tile(0);
                 }
             }
             for(int i = 0;i < heights.Count; i++)//filling an empty board with tiles with bombs
             {
-                List<Tile> adj = new List<Tile>();
-                if (widths[i] > 0 && widths[i] < Board.GetLength(0) - 1)
+                Board[widths[i], heights[i]] = new Tile(-1);
+                for (int k = -1; k <= 1; k++)
                 {
-                    if (heights[i] > 0 && heights[i] < Board.GetLength(1) - 1)//if in middle middle
+                    for( int j = -1;j <= 1; j++)
                     {
-                        
-                    }
-                    else//if in middle but no top or bottom
-                    {
-
-                    }
-                }
-                else
-                {
-                    if (heights[i] > 0 && heights[i] < Board.GetLength(1) - 1)//if in middle left or right
-                    {
-
-                    }
-                    else//if in corner
-                    {
-
+                        if (k!=0|| j!=0)
+                        {
+                            bool withinBounds = 
+                                (widths[i] + k >= 0 && widths[i] + k < Board.GetLength(0))//checks if the k value gives a tile that exists in the board array
+                                &&
+                                (heights[i] + j >= 0 && heights[i] + j < Board.GetLength(1));//checks if the j value gives a tile that exists in the board array
+                            if (withinBounds) 
+                            {
+                                if(Board[widths[i] + k, heights[i] + j].Value!=-1)Board[widths[i] + k, heights[i] + j].AddBomb();
+                            }
+                        }
                     }
                 }
             }
 
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="Case">1-middle middle.2-middle top/bottom.3-right/left middle.4-corner</param>
-        /// <returns></returns>
-        public List<Tile> GetAdj(int width,int height,int Case)
+        public void UnvailTile(int x,int y)
         {
-            List<Tile> result=new List<Tile>();
-            switch (Case) 
+            if ((x < 0 || y < 0 || x >= Board.GetLength(0) || y >= Board.GetLength(1))|| Board[x, y] == null)
             {
-                case 1:
-                    for(int i=-1)
-                case 2:
-                case 3:
-                case 4:
+                Console.WriteLine("illegal move");
+                return;
             }
+            if (Board[x, y].Unvailed) return;
+            
+            if(!Board[x, y].Dig())
+            {
+                GameLost();
+                return;
+            }
+            if (Board[x, y].Value == 0)
+            {
+                for (int k = -1; k <= 1; k++)
+                {
+                    for (int j = -1; j <= 1; j++)
+                    {
+
+                        if (k != 0 || j != 0)
+                        {
+                            bool withinBounds =
+                                (x + k >= 0 && x + k < Board.GetLength(0))//checks if the k value gives a tile that exists in the board array
+                                &&
+                                (y + j >= 0 && y + j < Board.GetLength(1));//checks if the j value gives a tile that exists in the board array
+                            if (withinBounds)
+                            {
+                                UnvailTile(x + k, y + j);
+                            }
+                        }
+                    }
+                }
+            }
+            EndTime = DateTime.Now;
+        }
+        public void GameLost()
+        {
+            for (int i = 0; i < Board.GetLength(0); i++)//width
+            {
+                for (int j = 0; j < Board.GetLength(1); j++)//height
+                {
+                    Board[i, j].Dig();
+                }
+            }
+            EndTime = DateTime.Now;
+            IsPlaying = false;
+            Console.WriteLine(this);
         }
         
         public bool? WonGame()
         {
             return null;
+        }
+        public override string ToString()
+        {
+            string result = string.Empty;
+            result += "Time: " + (EndTime - StartTime ).Hours + ":" + (EndTime - StartTime ).Minutes + ":" + (EndTime - StartTime ).Seconds + "\n";
+            for (int j = 0; j < Board.GetLength(1); j++)//width
+            {
+                for (int i = 0; i < Board.GetLength(0); i++)//height
+                {
+                    result += Board[i,j] + " ";
+                }
+                result += "\n";
+            }
+            return result;
         }
     }
 }

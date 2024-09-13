@@ -9,11 +9,13 @@ namespace Minesweeper
     public class Game
     {
         private readonly Tile[,] Board;
+        private int VailedTiles;
         public DateTime StartTime { get; private set; }
         public DateTime EndTime { get; private set; }   
         public bool IsPlaying { get; private set; }
-        public bool? GameWon { get {return WonGame(); }  }
+        
         public int Bombs {  get; private set; }
+        
         public Game(int width,int height,int Bombs_)
         {
             StartTime=DateTime.Now;
@@ -21,6 +23,7 @@ namespace Minesweeper
             IsPlaying = true;
             Board = new Tile[width,height];
             Bombs = Bombs_;
+            VailedTiles = width * height;
             FillBoard();
         }
         public void FillBoard()
@@ -78,7 +81,7 @@ namespace Minesweeper
                 return;
             }
             if (Board[x, y].Unvailed) return;
-            
+            VailedTiles--;
             if(!Board[x, y].Dig())
             {
                 GameLost();
@@ -105,7 +108,19 @@ namespace Minesweeper
                     }
                 }
             }
+            if (VailedTiles == Bombs) GameWon();
             EndTime = DateTime.Now;
+        }
+        public void FlagTile(int x, int y)
+        {
+            if ((x < 0 || y < 0 || x >= Board.GetLength(0) || y >= Board.GetLength(1)) || Board[x, y] == null)
+            {
+                Console.WriteLine("illegal move");
+                return;
+            }
+            if (Board[x, y].Unvailed) return;
+            if (Board[x, y].Flag()) Bombs--;
+            else Bombs++;
         }
         public void GameLost()
         {
@@ -118,22 +133,62 @@ namespace Minesweeper
             }
             EndTime = DateTime.Now;
             IsPlaying = false;
+            Console.Clear();
+            Console.WriteLine("Game lost");
             Console.WriteLine(this);
         }
-        
-        public bool? WonGame()
+        public bool? GameWon()
         {
-            return null;
+            EndTime = DateTime.Now;
+            IsPlaying = false;
+            Console.Clear();
+            Console.WriteLine(this);
+            Console.WriteLine("You won!!!!!");
+            return true;
+        }
+        public void Play()
+        {
+            while(IsPlaying)
+            {
+                Console.Clear();
+                Console.WriteLine(this);
+                Console.WriteLine("what action do you wish to do\n" + "1-dig. 2-flag tile. 3-quit game");
+                int input = int.Parse(Console.ReadLine());
+                if (input==1)
+                {
+                    Console.WriteLine("write the x value of the spot you want to dig");
+                    int x = int.Parse(Console.ReadLine());
+                    Console.WriteLine("write the y value of the spot you want to dig");
+                    int y = int.Parse(Console.ReadLine());
+                    this.UnvailTile(x, y);
+                }
+                else if(input==2)
+                {
+                    Console.WriteLine("write the x value of the spot you want to flag");
+                    int x = int.Parse(Console.ReadLine());
+                    Console.WriteLine("write the y value of the spot you want to flag");
+                    int y = int.Parse(Console.ReadLine());
+                    this.FlagTile(x, y);
+                }
+                else if(input== 3)
+                {
+                    GameLost();
+                }
+            }
         }
         public override string ToString()
         {
             string result = string.Empty;
+            result += "@: "+Bombs+"\n";
             result += "Time: " + (EndTime - StartTime ).Hours + ":" + (EndTime - StartTime ).Minutes + ":" + (EndTime - StartTime ).Seconds + "\n";
-            for (int j = 0; j < Board.GetLength(1); j++)//width
+            result += "  ";
+            for (int j = -1; j < Board.GetLength(1); j++)//width
             {
+                if (j != -1) result += j % 10 + " ";
                 for (int i = 0; i < Board.GetLength(0); i++)//height
                 {
-                    result += Board[i,j] + " ";
+                    if (j == -1) result += (i%10)+" ";
+                    else result += Board[i,j] + " ";
                 }
                 result += "\n";
             }

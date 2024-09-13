@@ -10,28 +10,39 @@ namespace Minesweeper
     {
         public int Value { get; private set; }
         public bool Unvailed { get; private set; }//-1 is bomb
+        public bool Flagged {  get; private set; }
         public Tile(int Value_)
         {
             Value = Value_;
             Unvailed = false;
+            Flagged = false;
         }
         public Tile(int Value_,bool Unvailed_) : this(Value_)
         {
             Unvailed = Unvailed_;
+
         }
         public bool Dig()//returns true when the move doesn't kill you
         {
-            if (Unvailed) return true;
+            if (Unvailed||Flagged) return true;
             Unvailed = true;
             if (Value == -1) return false;
             return true;
         }
+        public bool Flag()//if the tile is flagged by this action this will return true
+        {
+            if (Flagged) Flagged = false;
+            else Flagged = true;
+            return Flagged;
+        }
+        
         public void AddBomb()
         {
             Value+=1;
         }
         public override string ToString()
         {
+            if (Flagged) return "@";
             if (Unvailed)
             {
                 if(Value!=-1) return Value.ToString();
